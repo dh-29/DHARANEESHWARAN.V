@@ -1,0 +1,208 @@
+dimport javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List; // Explicit import for java.util.List
+import java.util.Map;
+
+class Cab {
+    String id;
+    String type;
+    double farePerKm;
+    boolean available;
+
+    public Cab(String id, String type, double farePerKm, boolean available) {
+        this.id = id;
+        this.type = type;
+        this.farePerKm = farePerKm;
+        this.available = available;
+    }
+}
+
+public class CabBookingSystemSwing {
+    private static Map<String, String> users = new HashMap<>();
+    private static Map<String, Cab> cabs = new HashMap<>();
+    private static List<String> bookings = new ArrayList<>(); // Corrected List declaration
+    private static JFrame frame;
+    private static String loggedInUser = null;
+
+    public static void main(String[] args) {
+        initializeCabs();
+        showMainMenu();
+    }
+
+    private static void initializeCabs() {
+        cabs.put("Cab1", new Cab("Cab1", "Sedan", 10.0, true));
+        cabs.put("Cab2", new Cab("Cab2", "SUV", 15.0, true));
+        cabs.put("Cab3", new Cab("Cab3", "Hatchback", 8.0, true));
+    }
+
+    private static void showMainMenu() {
+        frame = new JFrame("Online Cab Booking System");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(400, 300);
+
+        JLabel label = new JLabel("Welcome to Cab Booking System", SwingConstants.CENTER);
+        label.setFont(new Font("Arial", Font.BOLD, 16));
+
+        JButton registerButton = new JButton("Register");
+        JButton loginButton = new JButton("Login");
+
+        registerButton.addActionListener(e -> showRegisterScreen());
+        loginButton.addActionListener(e -> showLoginScreen());
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(3, 1, 10, 10));
+        panel.add(label);
+        panel.add(registerButton);
+        panel.add(loginButton);
+
+        frame.add(panel);
+        frame.setVisible(true);
+    }
+
+    private static void showRegisterScreen() {
+        frame.getContentPane().removeAll();
+        frame.repaint();
+
+        JLabel usernameLabel = new JLabel("Username:");
+        JTextField usernameField = new JTextField(20);
+        JLabel passwordLabel = new JLabel("Password:");
+        JPasswordField passwordField = new JPasswordField(20);
+        JButton registerButton = new JButton("Register");
+        JButton backButton = new JButton("Back");
+
+        registerButton.addActionListener(e -> {
+            String username = usernameField.getText();
+            String password = new String(passwordField.getPassword());
+            if (users.containsKey(username)) {
+                JOptionPane.showMessageDialog(frame, "Username already exists!", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                users.put(username, password);
+                JOptionPane.showMessageDialog(frame, "Registration successful!");
+                showMainMenu();
+            }
+        });
+
+        backButton.addActionListener(e -> showMainMenu());
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(4, 2, 10, 10));
+        panel.add(usernameLabel);
+        panel.add(usernameField);
+        panel.add(passwordLabel);
+        panel.add(passwordField);
+        panel.add(registerButton);
+        panel.add(backButton);
+
+        frame.add(panel);
+        frame.revalidate();
+    }
+
+    private static void showLoginScreen() {
+        frame.getContentPane().removeAll();
+        frame.repaint();
+
+        JLabel usernameLabel = new JLabel("Username:");
+        JTextField usernameField = new JTextField(20);
+        JLabel passwordLabel = new JLabel("Password:");
+        JPasswordField passwordField = new JPasswordField(20);
+        JButton loginButton = new JButton("Login");
+        JButton backButton = new JButton("Back");
+
+        loginButton.addActionListener(e -> {
+            String username = usernameField.getText();
+            String password = new String(passwordField.getPassword());
+            if (users.containsKey(username) && users.get(username).equals(password)) {
+                loggedInUser = username;
+                JOptionPane.showMessageDialog(frame, "Login successful!");
+                showUserMenu();
+            } else {
+                JOptionPane.showMessageDialog(frame, "Invalid credentials!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        backButton.addActionListener(e -> showMainMenu());
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(4, 2, 10, 10));
+        panel.add(usernameLabel);
+        panel.add(usernameField);
+        panel.add(passwordLabel);
+        panel.add(passwordField);
+        panel.add(loginButton);
+        panel.add(backButton);
+
+        frame.add(panel);
+        frame.revalidate();
+    }
+
+    private static void showUserMenu() {
+        frame.getContentPane().removeAll();
+        frame.repaint();
+
+        JLabel label = new JLabel("Welcome, " + loggedInUser, SwingConstants.CENTER);
+        label.setFont(new Font("Arial", Font.BOLD, 16));
+
+        JButton viewCabsButton = new JButton("View Available Cabs");
+        JButton bookCabButton = new JButton("Book a Cab");
+        JButton logoutButton = new JButton("Logout");
+
+        viewCabsButton.addActionListener(e -> showAvailableCabs());
+        bookCabButton.addActionListener(e -> showCabBookingScreen());
+        logoutButton.addActionListener(e -> {
+            loggedInUser = null;
+            showMainMenu();
+        });
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(4, 1, 10, 10));
+        panel.add(label);
+        panel.add(viewCabsButton);
+        panel.add(bookCabButton);
+        panel.add(logoutButton);
+
+        frame.add(panel);
+        frame.revalidate();
+    }
+
+    private static void showAvailableCabs() {
+        StringBuilder availableCabs = new StringBuilder("Available Cabs:\n");
+        for (Cab cab : cabs.values()) {
+            if (cab.available) {
+                availableCabs.append(String.format("%s: %s - ₹%.2f per km\n", cab.id, cab.type, cab.farePerKm));
+            }
+        }
+        JOptionPane.showMessageDialog(frame, availableCabs.toString(), "Available Cabs", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private static void showCabBookingScreen() {
+        JTextField cabIdField = new JTextField(10);
+        JTextField distanceField = new JTextField(10);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(3, 2, 10, 10));
+        panel.add(new JLabel("Cab ID:"));
+        panel.add(cabIdField);
+        panel.add(new JLabel("Distance (km):"));
+        panel.add(distanceField);
+
+        int result = JOptionPane.showConfirmDialog(frame, panel, "Book a Cab", JOptionPane.OK_CANCEL_OPTION);
+        if (result == JOptionPane.OK_OPTION) {
+            String cabId = cabIdField.getText();
+            String distanceStr = distanceField.getText();
+
+            if (cabs.containsKey(cabId) && cabs.get(cabId).available) {
+                double distance = Double.parseDouble(distanceStr);
+                Cab cab = cabs.get(cabId);
+                double fare = distance * cab.farePerKm;
+                cab.available = false;
+                bookings.add(String.format("User: %s, Cab: %s, Fare: ₹%.2f", loggedInUser, cab.type, fare));
+                JOptionPane.showMessageDialog(frame, "Booking successful! Total fare: ₹" + fare);
+            } else {
+                JOptionPane.showMessageDialog(frame, "Invalid Cab ID or Cab is not available!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+}
